@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/blackflame007/hackernews/internal/auth"
+	// _ "github.com/blackflame007/hackernews/internal/auth"
+	"github.com/blackflame007/hackernews/graph"
+	"github.com/blackflame007/hackernews/graph/generated"
 	database "github.com/blackflame007/hackernews/internal/pkg/db/mysql"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -23,10 +25,12 @@ func main() {
 
 	router := chi.NewRouter()
 
+	router.Use(auth.Middleware())
+
 	database.InitDB()
 	defer database.CloseDB()
 	database.Migrate()
-	server := handler.NewDefaultServer(hackernews.NewExecutableSchema(hackernews.Config{Resolvers: &hackernews.Resolver{}}))
+	server := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	router.Handle("/query", server)
 
